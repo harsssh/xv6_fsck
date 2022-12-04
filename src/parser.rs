@@ -85,13 +85,13 @@ pub fn parse_dinode(input: &[u8]) -> IResult<&[u8], Dinode> {
             }
         },
     );
-    parser(input)
+    parser.parse(input)
 }
 
 pub fn parse_dinodes(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<Dinode>> {
     let n = blocks * fs::IPB;
     let mut parser = multi::count(parse_dinode, n);
-    parser(input)
+    parser.parse(input)
 }
 
 fn parse_bit(input: (&[u8], usize)) -> IResult<(&[u8], usize), BlockStatus> {
@@ -115,18 +115,18 @@ pub fn parse_bitmap(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<BlockStat
 }
 
 fn read_block(input: &[u8]) -> IResult<&[u8], &[u8]> {
-    let parser = bytes::complete::take(fs::BSIZE);
-    parser(input)
+    let mut parser = bytes::complete::take(fs::BSIZE);
+    parser.parse(input)
 }
 
 pub fn parse_data(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<&[u8]>> {
     let mut parser = multi::count(read_block, blocks);
-    parser(input)
+    parser.parse(input)
 }
 
 fn skip_block(input: &[u8], n: usize) -> IResult<&[u8], ()> {
-    let parser = bytes::complete::take(fs::BSIZE * n);
-    let (input, _) = parser(input)?;
+    let mut parser = bytes::complete::take(fs::BSIZE * n);
+    let (input, _) = parser.parse(input)?;
     Ok((input, ()))
 }
 
