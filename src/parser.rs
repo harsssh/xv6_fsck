@@ -9,7 +9,7 @@ use nom::multi;
 use nom::sequence;
 use nom::number::complete::{le_u16, le_u32};
 use crate::fs;
-use crate::fs::{SuperBlock, Dinode, FileType, BlockStatus, FS};
+use crate::fs::{SuperBlock, Dinode, FileType, BlockStatus, FS, Dirent};
 
 pub fn read_img(path: &str) -> Vec<u8> {
     let mut file = File::open(path).expect("Failed to open file");
@@ -18,7 +18,7 @@ pub fn read_img(path: &str) -> Vec<u8> {
     buf
 }
 
-pub fn parse_superblock(input: &[u8]) -> IResult<&[u8], SuperBlock> {
+fn parse_superblock(input: &[u8]) -> IResult<&[u8], SuperBlock> {
     let mut parser = combinator::map(
         multi::count(le_u32, 8),
         |v| {
@@ -55,7 +55,7 @@ pub fn parse_superblock(input: &[u8]) -> IResult<&[u8], SuperBlock> {
     Ok((input, superblock))
 }
 
-pub fn parse_dinode(input: &[u8]) -> IResult<&[u8], Dinode> {
+fn parse_dinode(input: &[u8]) -> IResult<&[u8], Dinode> {
     let mut parser = combinator::map(
         sequence::tuple((
             multi::count(le_u16, 4),
@@ -88,7 +88,7 @@ pub fn parse_dinode(input: &[u8]) -> IResult<&[u8], Dinode> {
     parser.parse(input)
 }
 
-pub fn parse_dinodes(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<Dinode>> {
+fn parse_dinodes(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<Dinode>> {
     let n = blocks * fs::IPB;
     let mut parser = multi::count(parse_dinode, n);
     parser.parse(input)
@@ -106,7 +106,7 @@ fn parse_bit(input: (&[u8], usize)) -> IResult<(&[u8], usize), BlockStatus> {
 }
 
 // TODO: refactor
-pub fn parse_bitmap(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<BlockStatus>> {
+fn parse_bitmap(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<BlockStatus>> {
     let n = blocks * fs::BSIZE * 8;
     let mut parser = multi::count(parse_bit, n);
     let offset = 0;
@@ -119,7 +119,7 @@ fn read_block(input: &[u8]) -> IResult<&[u8], &[u8]> {
     parser.parse(input)
 }
 
-pub fn parse_data(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<&[u8]>> {
+fn parse_data(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<&[u8]>> {
     let mut parser = multi::count(read_block, blocks);
     parser.parse(input)
 }
@@ -128,6 +128,20 @@ fn skip_block(input: &[u8], n: usize) -> IResult<&[u8], ()> {
     let mut parser = bytes::complete::take(fs::BSIZE * n);
     let (input, _) = parser.parse(input)?;
     Ok((input, ()))
+}
+
+fn parse_dirname(input: &[u8]) -> IResult<&[u8], String> {
+    let mut parser = bytes::complete::take(fs::DIRSIZ);
+    let (input, dirname) = parser.parse(input)?;
+    let dirname = std::str::from_utf8(dirname).unwrap();
+    let dirname = dirname.trim_end_matches('\0').to_string();
+    Ok((input, dirname))
+}
+
+pub fn parse_dirent(input: &[u8]) -> Dirent {
+    let (input, inum) = le_u16::<_, nom::error::Error<_>>(input).unwrap();
+    let (_, name) = parse_dirname(input).unwrap();
+    Dirent { inum, name }
 }
 
 pub fn parse_fs(input: &[u8]) -> FS {
