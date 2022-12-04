@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Read;
 use nom::combinator;
+use nom::bits;
 use nom::IResult;
 use nom::multi;
 use nom::sequence;
@@ -73,4 +74,17 @@ pub fn parse_dinode(input: &[u8]) -> IResult<&[u8], Dinode> {
         },
     );
     parser(input)
+}
+
+fn parse_bit(input: (&[u8], usize)) -> IResult<(&[u8], usize), bool> {
+    let parser = bits::complete::take(1usize);
+    combinator::map(parser, |v: u8| v == 1)(input)
+}
+
+// TODO: refactor
+pub fn parse_bitmap(input: &[u8]) -> IResult<&[u8], Vec<bool>> {
+    let mut parser = multi::count(parse_bit, fs::BPB);
+    let offset = 0;
+    let (input, output) = parser((input, offset)).unwrap();
+    Ok((input.0, output))
 }
