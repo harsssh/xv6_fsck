@@ -3,7 +3,7 @@ pub const ROOTINO: u16 = 1;
 // block size
 pub const BSIZE: usize = 1024;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct SuperBlock {
     // Must be FSMAGIC
     pub magic: u32,
@@ -29,7 +29,7 @@ pub const NDIRECT: usize = 12;
 pub const NINDIRECT: usize = BSIZE / 4;
 pub const MAXFILE: usize = NDIRECT + NINDIRECT;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum FileType {
     UNUSED,
     DIR,
@@ -37,7 +37,7 @@ pub enum FileType {
     DEV,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct Dinode {
     // File type
     pub typ: FileType,
@@ -61,10 +61,17 @@ pub const BPB: usize = BSIZE * 8;
 
 pub const DIRSIZ: usize = 14;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct Dirent {
     // Inode number
     pub inum: u16,
     // File name
     pub name: String,
+}
+
+pub struct FS<'a> {
+    pub superblock: SuperBlock,
+    pub dinodes: Vec<Dinode>,
+    pub bitmap: Vec<bool>,
+    pub data: Vec<&'a [u8]>, // TODO: revise type
 }
