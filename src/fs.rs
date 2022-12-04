@@ -1,4 +1,8 @@
 pub mod consts;
+mod dinode_impl;
+mod fs_impl;
+mod superblock_impl;
+mod dirent_impl;
 
 pub use consts::*;
 
@@ -43,7 +47,7 @@ pub struct Dinode {
     // Size of file (bytes)
     pub size: u32,
     // Data block addresses
-    pub addrs: [u32; NDIRECT + 1],
+    addrs: [u32; NDIRECT + 1],
 }
 
 #[derive(Debug, PartialEq)]

@@ -33,16 +33,7 @@ fn parse_superblock(input: &[u8]) -> IResult<&[u8], SuperBlock> {
             let logstart = v[5];
             let inodestart = v[6];
             let bmapstart = v[7];
-            SuperBlock {
-                magic,
-                size,
-                nblocks,
-                ninodes,
-                nlog,
-                logstart,
-                inodestart,
-                bmapstart,
-            }
+            SuperBlock::new(magic, size, nblocks, ninodes, nlog, logstart, inodestart, bmapstart)
         },
     );
 
@@ -85,14 +76,7 @@ fn parse_dinode(input: &[u8]) -> IResult<&[u8], Dinode> {
             let major = v[0];
             let minor = v[1];
             let nlink = v[2];
-            Dinode {
-                typ,
-                major,
-                minor,
-                nlink,
-                size,
-                addrs,
-            }
+            Dinode::new(typ, major, minor, nlink, size, addrs)
         },
     );
     parser.parse(input)
@@ -152,7 +136,7 @@ fn parse_dirname(input: &[u8]) -> IResult<&[u8], String> {
 pub fn parse_dirent(input: &[u8]) -> Dirent {
     let (input, inum) = le_u16::<_, nom::error::Error<_>>(input).unwrap();
     let (_, name) = parse_dirname(input).unwrap();
-    Dirent { inum, name }
+    Dirent::new(inum, name)
 }
 
 pub fn parse_fs(input: &[u8]) -> FS {
@@ -167,10 +151,5 @@ pub fn parse_fs(input: &[u8]) -> FS {
     let (input, bitmap) = parse_bitmap(input, nbitmap).unwrap();
     let (_, data) = parse_data(input, sb.nblocks as usize).unwrap();
 
-    FS {
-        superblock: sb,
-        dinodes,
-        bitmap,
-        data,
-    }
+    FS::new(sb, dinodes, bitmap, data)
 }
