@@ -55,26 +55,36 @@ fn parse_superblock(input: &[u8]) -> IResult<&[u8], SuperBlock> {
     Ok((input, superblock))
 }
 
+fn parse_file_type(input: &[u8]) -> IResult<&[u8], FileType> {
+    let (input, typ) = le_u16(input)?;
+    let typ = match typ {
+        0 => FileType::UNUSED,
+        1 => FileType::DIR,
+        2 => FileType::FILE,
+        3 => FileType::DEV,
+        _ => panic!("Invalid file type"),
+    };
+    Ok((input, typ))
+}
+
+fn parse_addrs(input: &[u8]) -> IResult<&[u8], [u32; fs::NDIRECT + 1]> {
+    let (input, addrs) = multi::count(le_u32, fs::NDIRECT + 1).parse(input)?;
+    let addrs: [u32; fs::NDIRECT + 1] = addrs.try_into().unwrap();
+    Ok((input, addrs))
+}
+
 fn parse_dinode(input: &[u8]) -> IResult<&[u8], Dinode> {
     let mut parser = combinator::map(
         sequence::tuple((
-            multi::count(le_u16, 4),
+            parse_file_type,
+            multi::count(le_u16, 3),
             le_u32,
-            multi::count(le_u32, fs::NDIRECT + 1))
-        )
-        , |(u, v, w)| {
-            let typ = match u[0] {
-                0 => FileType::UNUSED,
-                1 => FileType::DIR,
-                2 => FileType::FILE,
-                3 => FileType::DEV,
-                _ => panic!("Invalid file type"),
-            };
-            let major = u[1];
-            let minor = u[2];
-            let nlink = u[3];
-            let size = v;
-            let addrs: [u32; fs::NDIRECT + 1] = w.try_into().unwrap();
+            parse_addrs
+        )),
+        |(typ, v, size, addrs)| {
+            let major = v[0];
+            let minor = v[1];
+            let nlink = v[2];
             Dinode {
                 typ,
                 major,
