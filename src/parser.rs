@@ -6,7 +6,6 @@ use nom::bits;
 use nom::bytes;
 use nom::IResult;
 use nom::multi;
-use nom::sequence;
 use nom::number::complete::{le_u16, le_u32};
 use crate::fs;
 use crate::fs::{SuperBlock, Dinode, FileType, BlockStatus, FS, Dirent};
@@ -58,33 +57,31 @@ fn parse_file_type(input: &[u8]) -> IResult<&[u8], FileType> {
     Ok((input, typ))
 }
 
-fn parse_addrs(input: &[u8]) -> IResult<&[u8], [u32; fs::NDIRECT + 1]> {
+fn parse_addrs(input: &[u8], addrs_offset: u32) -> IResult<&[u8], [Option<u32>; fs::NDIRECT + 1]> {
     let (input, addrs) = multi::count(le_u32, fs::NDIRECT + 1).parse(input)?;
-    let addrs: [u32; fs::NDIRECT + 1] = addrs.try_into().unwrap();
+    let addrs = addrs
+        .into_iter()
+        .map(|x|
+            if x == 0 { None } else if x >= addrs_offset { Some(x - addrs_offset) } else { panic!("Invalid address") })
+        .collect::<Vec<Option<u32>>>()
+        .try_into()
+        .unwrap();
     Ok((input, addrs))
 }
 
-fn parse_dinode(input: &[u8]) -> IResult<&[u8], Dinode> {
-    let mut parser = combinator::map(
-        sequence::tuple((
-            parse_file_type,
-            multi::count(le_u16, 3),
-            le_u32,
-            parse_addrs
-        )),
-        |(typ, v, size, addrs)| {
-            let major = v[0];
-            let minor = v[1];
-            let nlink = v[2];
-            Dinode::new(typ, major, minor, nlink, size, addrs)
-        },
-    );
-    parser.parse(input)
+fn parse_dinode(input: &[u8], addrs_offset: u32) -> IResult<&[u8], Dinode> {
+    let (input, typ) = parse_file_type(input)?;
+    let (input, major) = le_u16(input)?;
+    let (input, minor) = le_u16(input)?;
+    let (input, nlink) = le_u16(input)?;
+    let (input, size) = le_u32(input)?;
+    let (input, addrs) = parse_addrs(input, addrs_offset)?;
+    Ok((input, Dinode::new(typ, major, minor, nlink, size, addrs)))
 }
 
-fn parse_dinodes(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<Dinode>> {
+fn parse_dinodes(input: &[u8], blocks: usize, addrs_offset: u32) -> IResult<&[u8], Vec<Dinode>> {
     let n = blocks * fs::IPB;
-    let mut parser = multi::count(parse_dinode, n);
+    let mut parser = multi::count(|i| parse_dinode(i, addrs_offset), n);
     parser.parse(input)
 }
 
@@ -145,9 +142,10 @@ pub fn parse_fs(input: &[u8]) -> FS {
 
     let ninodeblocks: usize = sb.ninodes as usize / fs::IPB + 1;
     let nbitmap: usize = sb.size as usize / fs::BPB + 1;
+    let datastart: u32 = sb.size - sb.nblocks;
 
     let (input, _) = skip_block(input, sb.nlog as usize).unwrap();
-    let (input, dinodes) = parse_dinodes(input, ninodeblocks).unwrap();
+    let (input, dinodes) = parse_dinodes(input, ninodeblocks, datastart).unwrap();
     let (input, bitmap) = parse_bitmap(input, nbitmap).unwrap();
     let (_, data) = parse_data(input, sb.nblocks as usize).unwrap();
 

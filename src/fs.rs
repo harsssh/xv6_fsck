@@ -47,7 +47,7 @@ pub struct Dinode {
     // Size of file (bytes)
     pub size: u32,
     // Data block addresses
-    addrs: [u32; NDIRECT + 1],
+    pub addrs: [Option<u32>; NDIRECT + 1],
 }
 
 #[derive(Debug, PartialEq)]
