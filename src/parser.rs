@@ -9,7 +9,7 @@ use nom::multi;
 use nom::sequence;
 use nom::number::complete::{le_u16, le_u32};
 use crate::fs;
-use crate::fs::{SuperBlock, Dinode, FileType, FS};
+use crate::fs::{SuperBlock, Dinode, FileType, BlockStatus, FS};
 
 pub fn read_img(path: &str) -> Vec<u8> {
     let mut file = File::open(path).expect("Failed to open file");
@@ -94,13 +94,19 @@ pub fn parse_dinodes(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<Dinode>>
     parser(input)
 }
 
-fn parse_bit(input: (&[u8], usize)) -> IResult<(&[u8], usize), bool> {
-    let parser = bits::complete::take(1usize);
-    combinator::map(parser, |v: u8| v == 1)(input)
+fn parse_bit(input: (&[u8], usize)) -> IResult<(&[u8], usize), BlockStatus> {
+    let mut parser = bits::complete::take(1usize);
+    let ((input, offset), bit) = parser.parse(input)?;
+    let status = match bit {
+        0 => BlockStatus::Free,
+        1 => BlockStatus::Allocated,
+        _ => panic!("Invalid bit"),
+    };
+    Ok(((input, offset), status))
 }
 
 // TODO: refactor
-pub fn parse_bitmap(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<bool>> {
+pub fn parse_bitmap(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<BlockStatus>> {
     let n = blocks * fs::BSIZE * 8;
     let mut parser = multi::count(parse_bit, n);
     let offset = 0;

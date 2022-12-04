@@ -54,9 +54,15 @@ pub struct Dirent {
     pub name: String,
 }
 
+#[derive(Debug, PartialEq)]
+pub enum BlockStatus {
+    Free,
+    Allocated,
+}
+
 pub struct FS<'a> {
     pub superblock: SuperBlock,
     pub dinodes: Vec<Dinode>,
-    pub bitmap: Vec<bool>,
+    pub bitmap: Vec<BlockStatus>,
     pub data: Vec<&'a [u8]>, // TODO: revise type
 }
