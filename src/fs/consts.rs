@@ -9,8 +9,10 @@ pub const NDIRECT: usize = 12;
 pub const NINDIRECT: usize = BSIZE / 4;
 pub const MAXFILE: usize = NDIRECT + NINDIRECT;
 
+pub const INODESIZE: usize = 64;
+
 // Inodes per block
-pub const IPB: usize = BSIZE / 64;
+pub const IPB: usize = BSIZE / INODESIZE;
 
 // Bitmap bits per block
 pub const BPB: usize = BSIZE * 8;
