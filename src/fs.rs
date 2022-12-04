@@ -60,9 +60,9 @@ pub enum BlockStatus {
     Allocated,
 }
 
-pub struct FS<'a> {
+pub struct FS {
     pub superblock: SuperBlock,
     pub dinodes: Vec<Dinode>,
     pub bitmap: Vec<BlockStatus>,
-    pub data: Vec<&'a [u8]>, // TODO: revise type
+    pub data: Vec<Vec<u8>>,
 }

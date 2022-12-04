@@ -124,12 +124,13 @@ fn parse_bitmap(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<BlockStatus>>
     Ok((input.0, output))
 }
 
-fn read_block(input: &[u8]) -> IResult<&[u8], &[u8]> {
-    let mut parser = bytes::complete::take(fs::BSIZE);
-    parser.parse(input)
+fn read_block(input: &[u8]) -> IResult<&[u8], Vec<u8>> {
+    let (input, block) = bytes::complete::take(fs::BSIZE).parse(input)?;
+    let block = block.to_vec();
+    Ok((input, block))
 }
 
-fn parse_data(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<&[u8]>> {
+fn parse_data(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<Vec<u8>>> {
     let mut parser = multi::count(read_block, blocks);
     parser.parse(input)
 }
