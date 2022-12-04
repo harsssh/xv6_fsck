@@ -1,5 +1,3 @@
-use std::mem;
-
 // root i-number
 pub const ROOTINO: u16 = 1;
 // block size
@@ -28,13 +26,21 @@ pub struct SuperBlock {
 pub const FSMAGIC: u32 = 0x10203040;
 
 pub const NDIRECT: usize = 12;
-pub const NINDIRECT: usize = BSIZE / mem::size_of::<u32>();
+pub const NINDIRECT: usize = BSIZE / 4;
 pub const MAXFILE: usize = NDIRECT + NINDIRECT;
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum FileType {
+    UNUSED,
+    DIR,
+    FILE,
+    DEV,
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Dinode {
     // File type
-    pub typ: u16,
+    pub typ: FileType,
     // Major device number (DEV only)
     pub major: u16,
     // Minor device number (DEV only)
@@ -44,11 +50,11 @@ pub struct Dinode {
     // Size of file (bytes)
     pub size: u32,
     // Data block addresses
-    pub addrs: [u32; NDIRECT+1],
+    pub addrs: [u32; NDIRECT + 1],
 }
 
 // Inodes per block
-pub const IPB: usize = BSIZE / mem::size_of::<Dinode>();
+pub const IPB: usize = BSIZE / 64;
 
 // Bitmap bits per block
 pub const BPB: usize = BSIZE * 8;

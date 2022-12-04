@@ -6,7 +6,7 @@ use nom::multi;
 use nom::sequence;
 use nom::number::complete::{le_u16, le_u32};
 use crate::fs;
-use crate::fs::{SuperBlock, Dinode};
+use crate::fs::{SuperBlock, Dinode, FileType};
 
 pub fn read_img(path: &str) -> Vec<u8> {
     let mut file = File::open(path).expect("Failed to open file");
@@ -50,7 +50,13 @@ pub fn parse_dinode(input: &[u8]) -> IResult<&[u8], Dinode> {
             multi::count(le_u32, fs::NDIRECT + 1))
         )
         , |(u, v, w)| {
-            let typ = u[0];
+            let typ = match u[0] {
+                0 => FileType::UNUSED,
+                1 => FileType::DIR,
+                2 => FileType::FILE,
+                3 => FileType::DEV,
+                _ => panic!("Invalid file type"),
+            };
             let major = u[1];
             let minor = u[2];
             let nlink = u[3];
