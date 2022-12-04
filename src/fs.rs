@@ -1,8 +1,6 @@
 pub mod consts;
-mod dinode_impl;
-mod fs_impl;
-mod superblock_impl;
-mod dirent_impl;
+pub mod check;
+mod constructor;
 
 pub use consts::*;
 
