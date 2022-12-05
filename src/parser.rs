@@ -134,10 +134,18 @@ fn parse_dirname(input: &[u8]) -> IResult<&[u8], String> {
     Ok((input, dirname))
 }
 
-pub fn parse_dirent(input: &[u8]) -> Dirent {
-    let (input, inum) = le_u16::<_, nom::error::Error<_>>(input).unwrap();
-    let (_, name) = parse_dirname(input).unwrap();
-    Dirent::new(inum, name)
+fn parse_dirent(input: &[u8]) -> IResult<&[u8], Option<Dirent>> {
+    let (input, inum) = le_u16::<_, nom::error::Error<_>>(input)?;
+    let (input, name) = parse_dirname(input)?;
+    let dirent = if inum == 0 { None } else { Some(Dirent::new(inum, name)) };
+    Ok((input, dirent))
+}
+
+pub fn parse_dirents(input: &[u8]) -> Vec<Option<Dirent>> {
+    let dirent_per_block = fs::BSIZE / fs::DIRENTSIZE;
+    let mut parser = multi::count(parse_dirent, dirent_per_block);
+    let (_, dirents) = parser.parse(input).unwrap();
+    dirents
 }
 
 pub fn parse_fs(input: &[u8]) -> FS {

@@ -18,3 +18,5 @@ pub const IPB: usize = BSIZE / INODESIZE;
 pub const BPB: usize = BSIZE * 8;
 
 pub const DIRSIZ: usize = 14;
+
+pub const DIRENTSIZE: usize = 2usize + DIRSIZ;
