@@ -1,17 +1,17 @@
 use super::*;
 use thiserror::Error;
 
-// TODO: refine naming
+// TODO: refine
 #[derive(Debug, Error)]
-pub enum FSError {
+pub enum FSError<'a> {
     /* About superblock */
-    #[error("incorrect field value in superblock")]
-    IncorrectSuperBlockField(SuperBlock),
+    #[error("incorrect field value in superblock: {0:?}")]
+    IncorrectSuperBlockField(&'a SuperBlock),
 
     /* About block usage */
     // (block number, status of block)
-    #[error("bitmap assumes block {0} is {1}, but this is incorrect")]
-    IncorrectBitmap(u32, BlockStatus),
+    #[error("bitmap assumes block {0} is {1:?}, but this is incorrect")]
+    IncorrectBitmap(u32, &'a BlockStatus),
     // (data block number, number of references)
     #[error("{0}-th data block is referenced from {1} inodes")]
     MultipleRef(u32, u32),

@@ -1,7 +1,7 @@
 pub mod consts;
 pub mod check;
 pub mod error;
-mod constructor;
+mod implement;
 
 pub use consts::*;
 
@@ -61,15 +61,6 @@ pub struct Dirent {
 pub enum BlockStatus {
     Free,
     Allocated,
-}
-
-impl std::fmt::Display for BlockStatus {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            BlockStatus::Free => write!(f, "Free"),
-            BlockStatus::Allocated => write!(f, "Allocated"),
-        }
-    }
 }
 
 pub struct FS {
