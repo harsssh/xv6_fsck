@@ -5,8 +5,6 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum FSError {
     /* About superblock */
-    #[error("invalid magic number")]
-    InvalidMagicNumber,
     #[error("incorrect field value in superblock")]
     IncorrectSuperBlockField(SuperBlock),
 
@@ -19,8 +17,6 @@ pub enum FSError {
     MultipleRef(u32, u32),
 
     /* About inode */
-    #[error("invalid file type")]
-    InvalidFileType,
     #[error("major and minor of device are not set")]
     InvalidDevice,
     // Note that in the case of directories, references by "." is not counted
