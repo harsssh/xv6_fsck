@@ -4,6 +4,7 @@ pub mod error;
 mod implement;
 
 pub use consts::*;
+use std::collections;
 
 #[derive(Debug, PartialEq)]
 pub struct SuperBlock {
@@ -68,4 +69,5 @@ pub struct FS {
     pub dinodes: Vec<Dinode>,
     pub bitmap: Vec<BlockStatus>,
     pub data: Vec<Vec<u8>>,
+    inum_to_dirents: collections::HashMap<u32, Option<Vec<Dirent>>>,
 }
