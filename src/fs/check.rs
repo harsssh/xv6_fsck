@@ -1,6 +1,9 @@
 use super::*;
 
 mod check_superblock;
+mod check_block_usage;
+mod check_inode;
+mod check_directory;
 
 /* For consistency check */
 // Size of file system image (blocks)
