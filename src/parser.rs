@@ -23,7 +23,7 @@ fn parse_superblock(input: &[u8]) -> IResult<&[u8], SuperBlock> {
         |v| {
             let magic = v[0];
             if magic != fs::FSMAGIC {
-                panic!("Invalid magic number");
+                panic!("invalid magic number");
             }
             let size = v[1];
             let nblocks = v[2];
@@ -52,7 +52,7 @@ fn parse_file_type(input: &[u8]) -> IResult<&[u8], FileType> {
         1 => FileType::DIR,
         2 => FileType::FILE,
         3 => FileType::DEV,
-        _ => panic!("Invalid file type"),
+        _ => panic!("invalid file type"),
     };
     Ok((input, typ))
 }
@@ -62,7 +62,7 @@ fn parse_addrs(input: &[u8], addrs_offset: u32) -> IResult<&[u8], [Option<u32>; 
     let addrs = addrs
         .into_iter()
         .map(|x|
-            if x == 0 { None } else if x >= addrs_offset { Some(x - addrs_offset) } else { panic!("Invalid address") })
+            if x == 0 { None } else if x >= addrs_offset { Some(x - addrs_offset) } else { panic!("invalid address") })
         .collect::<Vec<Option<u32>>>()
         .try_into()
         .unwrap();
@@ -91,7 +91,7 @@ fn parse_bit(input: (&[u8], usize)) -> IResult<(&[u8], usize), BlockStatus> {
     let status = match bit {
         0 => BlockStatus::Free,
         1 => BlockStatus::Allocated,
-        _ => panic!("Invalid bit"),
+        _ => panic!("invalid status"),
     };
     Ok(((input, offset), status))
 }
