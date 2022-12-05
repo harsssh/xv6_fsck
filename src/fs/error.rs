@@ -17,8 +17,9 @@ pub enum FSError<'a> {
     MultipleRef(u32, u32),
 
     /* About inode */
-    #[error("major and minor of device are not set")]
-    InvalidDevice,
+    // (inode number)
+    #[error("{0}-th inode is a device file, but its major/minor number is invalid")]
+    InvalidDevice(u32),
     // Note that in the case of directories, references by "." is not counted
     // (inode number, nlink)
     #[error("{0}-th inode assumes nlink is {1}, but this is incorrect")]
