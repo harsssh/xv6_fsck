@@ -4,7 +4,7 @@ use std::rc::{Rc, Weak};
 #[derive(Debug)]
 pub struct Node<T> {
     pub value: T,
-    pub parent: RefCell<Weak<Node<T>>>,
+    pub parent: RefCell<Vec<Weak<Node<T>>>>,
     pub children: RefCell<Vec<Rc<Node<T>>>>,
 }
 
@@ -12,13 +12,13 @@ impl<T> Node<T> {
     pub fn new(value: T) -> Self {
         Node {
             value,
-            parent: RefCell::new(Weak::new()),
+            parent: RefCell::new(Vec::new()),
             children: RefCell::new(Vec::new()),
         }
     }
 
-    pub fn set_parent(parent: &Rc<Node<T>>, child: &Rc<Node<T>>) {
-        child.parent.replace(Rc::downgrade(parent));
+    pub fn add_parent(parent: &Rc<Node<T>>, child: &Rc<Node<T>>) {
+        child.parent.borrow_mut().push(Rc::downgrade(parent));
     }
 
     pub fn add_child(parent: &Rc<Node<T>>, child: &Rc<Node<T>>) {
@@ -26,7 +26,7 @@ impl<T> Node<T> {
     }
 
     pub fn set_relation(parent: &Rc<Node<T>>, child: &Rc<Node<T>>) {
-        Node::set_parent(parent, child);
+        Node::add_parent(parent, child);
         Node::add_child(parent, child);
     }
 }

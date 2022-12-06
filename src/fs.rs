@@ -6,7 +6,7 @@ mod implement;
 
 pub use consts::*;
 use std::collections;
-use crate::util::tree::Node;
+use crate::util::graph::Node;
 use std::rc::Rc;
 
 #[derive(Debug, PartialEq)]

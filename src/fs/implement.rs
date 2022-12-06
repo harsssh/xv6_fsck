@@ -2,7 +2,7 @@ use super::*;
 
 use std::collections;
 use crate::parser;
-use crate::util::tree::Node;
+use crate::util::graph::Node;
 
 impl SuperBlock {
     pub fn new(magic: u32, size: u32, nblocks: u32, ninodes: u32, nlog: u32, logstart: u32, inodestart: u32, bmapstart: u32) -> Self {
@@ -86,7 +86,7 @@ impl FS {
 
     fn construct_directory_tree(&mut self) {
         let root = &mut self.directory_tree;
-        Node::set_parent(root, root);
+        Node::add_parent(root, root);
 
         let q = &mut collections::VecDeque::new();
         q.push_back(Rc::clone(&root));
