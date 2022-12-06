@@ -30,7 +30,7 @@ pub enum FSError<'a> {
     // Must be ceil(dinode.size/BSIZE)
     // (inode number, number of valid references in addrs)
     #[error("{0}-th inode refers to {1} data blocks, but this is invalid")]
-    InvalidNumberOfDataBlockRef(u16, u32),
+    InvalidNumberOfDataBlockRef(u16, usize),
 
     /* About directory */
     // (data block number of directory)
