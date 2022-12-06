@@ -141,4 +141,32 @@ impl FS {
         }
         Ok(())
     }
+
+    fn check_dirents_individual(&self, inum: u16) -> Result<(), FSError> {
+        let dirents = match self.get_dirents(&inum) {
+            Some(dirents) => dirents,
+            // not a directory
+            None => return Ok(()),
+        };
+
+        let valid = dirents.iter().all(|dirent| {
+            let i = dirent.inum;
+            self.dinodes[i as usize].typ != FileType::UNUSED
+        });
+
+        if valid {
+            Ok(())
+        } else {
+            Err(FSError::InvalidInodeRef(inum))
+        }
+    }
+
+    pub fn check_dirents(&self) -> Result<(), FSError> {
+        for (i, dindoe) in self.dinodes.iter().enumerate() {
+            if dindoe.typ == FileType::DIR {
+                self.check_dirents_individual(i as u16)?;
+            }
+        }
+        Ok(())
+    }
 }
