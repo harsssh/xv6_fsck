@@ -73,5 +73,7 @@ pub struct FS {
     pub bitmap: Vec<BlockStatus>,
     pub data: Vec<Vec<u8>>,
     inum_to_dirents: collections::HashMap<u16, Option<Vec<Dirent>>>,
-    directory_tree: Rc<Node<u16>>
+    // .value and .parent are set based on inode references
+    // In a invalid file system, they do not match ".", "..", respectively
+    directory_tree: Rc<Node<u16>>,
 }
