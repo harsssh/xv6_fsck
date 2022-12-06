@@ -6,6 +6,8 @@ mod implement;
 
 pub use consts::*;
 use std::collections;
+use crate::util::tree::Node;
+use std::rc::Rc;
 
 #[derive(Debug, PartialEq)]
 pub struct SuperBlock {
@@ -70,5 +72,6 @@ pub struct FS {
     pub dinodes: Vec<Dinode>,
     pub bitmap: Vec<BlockStatus>,
     pub data: Vec<Vec<u8>>,
-    inum_to_dirents: collections::HashMap<u32, Option<Vec<Dirent>>>,
+    inum_to_dirents: collections::HashMap<u16, Option<Vec<Dirent>>>,
+    directory_tree: Rc<Node<u16>>
 }
