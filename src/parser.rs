@@ -165,7 +165,7 @@ pub fn parse_fs(input: &[u8]) -> FS {
 }
 
 pub fn parse_indirect_reference_block(input: &[u8], datastart: u32) -> Vec<Option<u32>> {
-    let (_, addrs) = multi::count(le_u32::<_, nom::error::Error<_>>, fs::BSIZE / 4)(input).unwrap();
+    let (_, addrs) = multi::count(le_u32::<_, nom::error::Error<_>>, fs::NINDIRECT)(input).unwrap();
     // TODO: Refactor (Duplicate code)
     addrs
         .into_iter()
