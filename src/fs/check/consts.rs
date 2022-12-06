@@ -18,3 +18,4 @@ pub const NBLOCKS: usize = FSSIZE - LOGSIZE - NINODEBLOCKS - NBITMAP - 2;
 pub const LOGSTART: usize = 2;
 pub const INODESTART: usize = LOGSTART + LOGSIZE;
 pub const BITMAPSTART: usize = INODESTART + NINODEBLOCKS;
+pub const DATASTART: usize = BITMAPSTART + NBITMAP;
