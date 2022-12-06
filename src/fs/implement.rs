@@ -62,6 +62,10 @@ impl FS {
             None => None,
         }
     }
+    
+    pub fn get_node(&self, inum: &u16) -> Option<&Rc<Node<u16>>> {
+        self.inum_to_node.get(inum)
+    }
 
     fn init(&mut self) {
         self.init_dirents_hashmap();
