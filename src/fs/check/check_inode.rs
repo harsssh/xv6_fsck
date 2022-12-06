@@ -21,6 +21,6 @@ impl FS {
         if dinode.has_valid_device_numbers() {
             return Ok(());
         }
-        Err(FSError::InvalidDevice(index as u32))
+        Err(FSError::InvalidDevice(index as u16))
     }
 }
