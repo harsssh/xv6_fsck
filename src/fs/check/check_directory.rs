@@ -118,4 +118,27 @@ impl FS {
         }
         Ok(())
     }
+
+    fn check_directory_ref_individual(&self, inum: u16) -> Result<(), FSError> {
+        if self.dinodes[inum as usize].typ != FileType::DIR {
+            return Ok(());
+        }
+
+        let dir = self.get_node(&inum).unwrap();
+        if dir.parents.borrow().len() == 1 {
+            Ok(())
+        } else {
+            Err(FSError::InvalidDirRef(inum))
+        }
+    }
+
+    // Whether the directory is referenced only by its parent and children
+    pub fn check_directory_ref(&self) -> Result<(), FSError> {
+        for (inum, dinode) in self.dinodes.iter().enumerate() {
+            if dinode.typ == FileType::DIR {
+                self.check_directory_ref_individual(inum as u16)?;
+            }
+        }
+        Ok(())
+    }
 }
