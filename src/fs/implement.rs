@@ -87,7 +87,6 @@ impl FS {
 
     fn construct_directory_tree(&mut self) {
         let root = &mut self.directory_tree;
-        Node::add_parent(root, root);
         self.inum_to_node.insert(ROOTINO, Rc::clone(root));
 
         let q = &mut collections::VecDeque::new();
