@@ -62,7 +62,7 @@ impl FS {
             None => None,
         }
     }
-    
+
     pub fn get_node(&self, inum: &u16) -> Option<&Rc<Node<u16>>> {
         self.inum_to_node.get(inum)
     }
@@ -92,6 +92,7 @@ impl FS {
     fn construct_directory_tree(&mut self) {
         let root = &mut self.directory_tree;
         self.inum_to_node.insert(ROOTINO, Rc::clone(root));
+        Node::add_parent(root, root);
 
         let q = &mut collections::VecDeque::new();
         q.push_back(Rc::clone(&root));
