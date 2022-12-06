@@ -23,7 +23,7 @@ pub enum FSError<'a> {
     // Note that in the case of directories, references by "." is not counted
     // (inode number, nlink)
     #[error("{0}-th inode assumes nlink is {1}, but this is incorrect")]
-    IncorrectNLink(u16, u32),
+    IncorrectNLink(u16, u16),
     // (inode number)
     #[error("{0}-th inode refers to a freed data block")]
     InvalidDataBlockRef(u16),
