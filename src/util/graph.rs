@@ -4,7 +4,7 @@ use std::rc::{Rc, Weak};
 #[derive(Debug)]
 pub struct Node<T> {
     pub value: T,
-    pub parent: RefCell<Vec<Weak<Node<T>>>>,
+    pub parents: RefCell<Vec<Weak<Node<T>>>>,
     pub children: RefCell<Vec<Rc<Node<T>>>>,
 }
 
@@ -12,13 +12,13 @@ impl<T> Node<T> {
     pub fn new(value: T) -> Self {
         Node {
             value,
-            parent: RefCell::new(Vec::new()),
+            parents: RefCell::new(Vec::new()),
             children: RefCell::new(Vec::new()),
         }
     }
 
     pub fn add_parent(parent: &Rc<Node<T>>, child: &Rc<Node<T>>) {
-        child.parent.borrow_mut().push(Rc::downgrade(parent));
+        child.parents.borrow_mut().push(Rc::downgrade(parent));
     }
 
     pub fn add_child(parent: &Rc<Node<T>>, child: &Rc<Node<T>>) {
@@ -44,7 +44,7 @@ mod tests {
         Node::set_relation(&root, &child2);
 
         assert_eq!(root.children.borrow().len(), 2);
-        assert_eq!(child1.parent.borrow().upgrade().unwrap().value, 1);
-        assert_eq!(child2.parent.borrow().upgrade().unwrap().value, 1);
+        assert_eq!(child1.parents.borrow().upgrade().unwrap().value, 1);
+        assert_eq!(child2.parents.borrow().upgrade().unwrap().value, 1);
     }
 }
