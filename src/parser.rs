@@ -163,3 +163,13 @@ pub fn parse_fs(input: &[u8]) -> FS {
 
     FS::new(sb, dinodes, bitmap, data)
 }
+
+pub fn parse_indirect_reference_block(input: &[u8], datastart: u32) -> Vec<Option<u32>> {
+    let (_, addrs) = multi::count(le_u32::<_, nom::error::Error<_>>, fs::BSIZE / 4)(input).unwrap();
+    // TODO: Refactor (Duplicate code)
+    addrs
+        .into_iter()
+        // TODO: Error handling
+        .map(|x| if x == 0 { None } else if x >= datastart { Some(x - datastart) } else { panic!("invalid address") })
+        .collect::<Vec<Option<u32>>>()
+}

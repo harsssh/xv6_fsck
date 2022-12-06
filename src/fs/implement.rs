@@ -112,4 +112,25 @@ impl FS {
             }
         }
     }
+
+    pub fn get_all_addrs(&self, dinode: &Dinode) -> Vec<u32> {
+        let mut addrs = Vec::new();
+        for v in dinode.addrs.iter() {
+            if let Some(addr) = v {
+                addrs.push(*addr);
+            }
+        }
+
+        if let Some(addr) = &dinode.addrs[NDIRECT] {
+            let datastart = self.superblock.size - self.superblock.nblocks;
+            let addrs_indirect = parser::parse_indirect_reference_block(&self.data[*addr as usize], datastart);
+            for v in addrs_indirect {
+                if let Some(addr) = v {
+                    addrs.push(addr)
+                }
+            }
+        }
+
+        addrs
+    }
 }

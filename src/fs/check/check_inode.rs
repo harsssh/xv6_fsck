@@ -35,12 +35,9 @@ impl FS {
 
     fn check_addrs_ref_individual(&self, inum: u16) -> Result<(), FSError> {
         let dinode = &self.dinodes[inum as usize];
-        let valid = dinode.addrs.iter().all(|addr| {
-            match addr {
-                Some(addr) => self.bitmap[*addr as usize] == BlockStatus::Allocated,
-                None => true,
-            }
-        });
+        let valid = self.get_all_addrs(dinode).iter().all(|addr|
+            self.bitmap[*addr as usize] == BlockStatus::Allocated
+        );
 
         if valid {
             Ok(())
@@ -53,6 +50,25 @@ impl FS {
     pub fn check_addrs_ref(&self) -> Result<(), FSError> {
         for i in 0..self.dinodes.len() {
             self.check_addrs_ref_individual(i as u16)?;
+        }
+        Ok(())
+    }
+
+    fn check_addrs_len_individual(&self, inum: u16) -> Result<(), FSError> {
+        let dinode = &self.dinodes[inum as usize];
+        let correct = (dinode.size as f64 / BSIZE as f64).ceil() as usize;
+        let len = self.get_all_addrs(dinode).len();
+
+        if len == correct {
+            Ok(())
+        } else {
+            Err(FSError::InvalidNumberOfDataBlockRef(inum, len))
+        }
+    }
+
+    pub fn check_addrs_len(&self) -> Result<(), FSError> {
+        for i in 0..self.dinodes.len() {
+            self.check_addrs_len_individual(i as u16)?;
         }
         Ok(())
     }
