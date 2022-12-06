@@ -44,7 +44,7 @@ mod tests {
         Node::set_relation(&root, &child2);
 
         assert_eq!(root.children.borrow().len(), 2);
-        assert_eq!(child1.parents.borrow().upgrade().unwrap().value, 1);
-        assert_eq!(child2.parents.borrow().upgrade().unwrap().value, 1);
+        assert_eq!(child1.parents.borrow().len(), 1);
+        assert_eq!(child2.parents.borrow().len(), 1);
     }
 }
