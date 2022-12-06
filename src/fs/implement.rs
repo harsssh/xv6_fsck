@@ -50,6 +50,7 @@ impl FS {
             data,
             inum_to_dirents: collections::HashMap::new(),
             directory_tree: Rc::new(Node::new(ROOTINO)),
+            inum_to_node: collections::HashMap::new(),
         };
         fs.init();
         fs
@@ -87,11 +88,14 @@ impl FS {
     fn construct_directory_tree(&mut self) {
         let root = &mut self.directory_tree;
         Node::add_parent(root, root);
+        self.inum_to_node.insert(ROOTINO, Rc::clone(root));
 
         let q = &mut collections::VecDeque::new();
         q.push_back(Rc::clone(&root));
         while let Some(node) = q.pop_front() {
             let inum = node.value;
+            self.inum_to_node.insert(inum, Rc::clone(&node));
+
             if let Some(dirents) = self.get_dirents(&inum) {
                 for dirent in dirents {
                     if dirent.name == "." || dirent.name == ".." {
