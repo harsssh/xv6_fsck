@@ -36,11 +36,8 @@ impl FS {
             }
             let addr = (i - DATASTART) as u32;
             let v = count.get(&addr).unwrap_or(&0);
-            let status = match *v {
-                0 => BlockStatus::Free,
-                1 => BlockStatus::Allocated,
-                _ => panic!("invalid ref count"),
-            };
+            // *v > 1 is invalid, but this error is detected by other checkers
+            let status = if *v > 0 { BlockStatus::Allocated } else { BlockStatus::Free };
             if *bmap != status {
                 errors.push(FSError::IncorrectBitmap(addr, bmap));
             }
