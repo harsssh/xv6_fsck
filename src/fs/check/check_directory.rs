@@ -70,55 +70,6 @@ impl FS {
         Ok(())
     }
 
-    fn check_nlink_individual(&self, inum: u16) -> Result<(), FSError> {
-        let dinode = &self.dinodes[inum as usize];
-        match dinode.typ {
-            FileType::FILE => {
-                let dir = self.get_node(&inum).unwrap();
-                let ref_count = dir.parents.borrow().len() as u16;
-                if dinode.nlink == ref_count {
-                    Ok(())
-                } else {
-                    Err(FSError::IncorrectNLink(inum, dinode.nlink))
-                }
-            },
-            FileType::DIR => {
-                let dir = self.get_node(&inum).unwrap();
-                assert_eq!(dir.parents.borrow().len(), 1);
-                // reference from parent directory
-                let mut ref_count = dir.parents.borrow().len() as u16;
-                // reference from child directories
-                for child in dir.children.borrow().iter() {
-                    let inum_child = child.value;
-                    let dinode_child = &self.dinodes[inum_child as usize];
-                    if dinode_child.typ == FileType::DIR {
-                        ref_count += 1;
-                    }
-                }
-
-                if dinode.nlink == ref_count {
-                    Ok(())
-                } else {
-                    Err(FSError::IncorrectNLink(inum, dinode.nlink))
-                }
-            },
-            // TODO: check nlink for device file
-            FileType::DEV => Ok(()),
-            FileType::UNUSED => Ok(()),
-        }
-    }
-
-    // Assuming that reference by ".." is correct
-    // and directories must be referenced only by their parent and child directories
-    pub fn check_nlink(&self) -> Result<(), FSError> {
-        for (inum, dinode) in self.dinodes.iter().enumerate() {
-            if dinode.typ != FileType::UNUSED {
-                self.check_nlink_individual(inum as u16)?;
-            }
-        }
-        Ok(())
-    }
-
     fn check_directory_ref_individual(&self, inum: u16) -> Result<(), FSError> {
         if self.dinodes[inum as usize].typ != FileType::DIR {
             return Ok(());
