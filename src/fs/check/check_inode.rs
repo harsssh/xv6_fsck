@@ -87,7 +87,10 @@ impl FS {
         let dinode = &self.dinodes[inum as usize];
         match dinode.typ {
             FileType::FILE => {
-                let dir = self.get_node(&inum).unwrap();
+                let dir = match self.get_node(&inum) {
+                    Some(dir) => dir,
+                    None => return Err(FSError::DanglingInode(inum)),
+                };
                 let ref_count = dir.parents.borrow().len() as u16;
                 if dinode.nlink == ref_count {
                     Ok(())
@@ -96,7 +99,10 @@ impl FS {
                 }
             }
             FileType::DIR => {
-                let dir = self.get_node(&inum).unwrap();
+                let dir = match self.get_node(&inum) {
+                    Some(dir) => dir,
+                    None => return Err(FSError::DanglingInode(inum)),
+                };
                 assert_eq!(dir.parents.borrow().len(), 1);
                 // reference from parent directory
                 let mut ref_count = dir.parents.borrow().len() as u16;

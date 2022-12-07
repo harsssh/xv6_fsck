@@ -51,7 +51,10 @@ impl FS {
             }
         }
 
-        let dir = self.get_node(&inum).unwrap();
+        let dir = match self.get_node(&inum) {
+            Some(dir) => dir,
+            None => return Err(FSError::DanglingInode(inum)),
+        };
         let parents = dir.parents.borrow();
         assert_eq!(parents.len(), 1);
         let parent = parents[0].upgrade().unwrap();
@@ -81,7 +84,10 @@ impl FS {
             return Ok(());
         }
 
-        let dir = self.get_node(&inum).unwrap();
+        let dir = match self.get_node(&inum) {
+            Some(dir) => dir,
+            None => return Err(FSError::DanglingInode(inum)),
+        };
         if dir.parents.borrow().len() == 1 {
             Ok(())
         } else {

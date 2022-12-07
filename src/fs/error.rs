@@ -47,4 +47,8 @@ pub enum FSError<'a> {
     // (inode number of directory)
     #[error("{0}-th inode of directory is falsely referenced by other directories")]
     InvalidDirRef(u16),
+
+    /* Others */
+    #[error("{0}-th inode cannot be traced from the root directory")]
+    DanglingInode(u16),
 }
