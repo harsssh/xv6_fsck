@@ -9,12 +9,12 @@ pub enum FSError<'a> {
     IncorrectSuperBlockField(&'a SuperBlock),
 
     /* About block usage */
-    // (block number, status of block)
-    #[error("bitmap assumes block {0} is {1:?}, but this is incorrect")]
-    IncorrectBitmap(u16, &'a BlockStatus),
-    // (data block number, number of references)
-    #[error("{0}-th data block is referenced from {1} inodes")]
-    MultipleRef(u16, u32),
+    // (data block number, status of block)
+    #[error("bitmap assumes data block {0} is {1:?}, but this is incorrect")]
+    IncorrectBitmap(u32, &'a BlockStatus),
+    // (data block number)
+    #[error("{0}-th data block is referenced from multiple inodes")]
+    MultipleRef(u32),
 
     /* About inode */
     // (inode number)
@@ -33,18 +33,18 @@ pub enum FSError<'a> {
     InvalidNumberOfDataBlockRef(u16, usize),
 
     /* About directory */
-    // (data block number of directory)
-    #[error("{0}-th data block of directory refers to an unused inode")]
+    // (inode number of directory)
+    #[error("{0}-th inode of directory refers to an unused inode")]
     InvalidInodeRef(u16),
-    // (data block number of directory)
-    #[error("{0}-th data block of directory does not refer to itself by \".\"")]
+    // (inode number of directory)
+    #[error("{0}-th inode of directory does not refer to itself by \".\"")]
     IncorrectCurrentDirRef(u16),
     // Note that for "/", it refers to itself
-    // (data block number of directory)
-    #[error("{0}-th data block of directory does not refer to parent directory by \"..\"")]
+    // (inode number of directory)
+    #[error("{0}-th inode of directory does not refer to parent directory by \"..\"")]
     IncorrectParentDirRef(u16),
     // Must be referenced only by itself, its parent directories, and subdirectories
-    // (data block number of directory)
-    #[error("{0}-th data block of directory is falsely referenced by other directories")]
+    // (inode number of directory)
+    #[error("{0}-th inode of directory is falsely referenced by other directories")]
     InvalidDirRef(u16),
 }
