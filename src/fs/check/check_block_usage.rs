@@ -14,20 +14,22 @@ impl FS {
     }
 
     // Check the number of references to data blocks
-    pub fn check_datablock_ref(&self) -> Result<(), FSError> {
+    pub fn check_datablock_ref(&self) -> Vec<FSError> {
+        let mut errors = vec![];
         let count = self.count_datablock_ref();
         for (addr, v) in count.iter() {
             if *v > 1 {
-                return Err(FSError::MultipleRef(*addr));
+                errors.push(FSError::MultipleRef(*addr));
             }
         }
-        Ok(())
+        errors
     }
 
     // FIXME: Raise error about valid file system
     // Check bitmap only for data blocks
     // Assume that the each data block references is at most 1
-    pub fn check_bitmap(&self) -> Result<(), FSError> {
+    pub fn check_bitmap(&self) -> Vec<FSError> {
+        let mut errors = vec![];
         let count = self.count_datablock_ref();
         for (i, bmap) in self.bitmap.iter().enumerate() {
             if i < DATASTART {
@@ -41,9 +43,9 @@ impl FS {
                 _ => panic!("invalid ref count"),
             };
             if *bmap != status {
-                return Err(FSError::IncorrectBitmap(addr, bmap));
+                errors.push(FSError::IncorrectBitmap(addr, bmap));
             }
         }
-        Ok(())
+        errors
     }
 }

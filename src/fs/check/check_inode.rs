@@ -24,13 +24,16 @@ impl FS {
         Err(FSError::InvalidDevice(inum as u16))
     }
 
-    pub fn check_device_numbers(&self) -> Result<(), FSError> {
+    pub fn check_device_numbers(&self) -> Vec<FSError> {
+        let mut errors = vec![];
         for (i, dinode) in self.dinodes.iter().enumerate() {
             if dinode.typ == FileType::DEV {
-                self.check_device_numbers_individual(i as u16)?;
+                if let Err(e) = self.check_device_numbers_individual(i as u16) {
+                    errors.push(e);
+                }
             }
         }
-        Ok(())
+        errors
     }
 
     fn check_addrs_ref_individual(&self, inum: u16) -> Result<(), FSError> {
@@ -47,11 +50,14 @@ impl FS {
     }
 
     // Assuming the bitmap is valid
-    pub fn check_addrs_ref(&self) -> Result<(), FSError> {
+    pub fn check_addrs_ref(&self) -> Vec<FSError> {
+        let mut errors = vec![];
         for i in 0..self.dinodes.len() {
-            self.check_addrs_ref_individual(i as u16)?;
+            if let Err(e) = self.check_addrs_ref_individual(i as u16) {
+                errors.push(e);
+            }
         }
-        Ok(())
+        errors
     }
 
     // FIXME: Raise error about valid file system
@@ -67,11 +73,14 @@ impl FS {
         }
     }
 
-    pub fn check_addrs_len(&self) -> Result<(), FSError> {
+    pub fn check_addrs_len(&self) -> Vec<FSError> {
+        let mut errors = vec![];
         for i in 0..self.dinodes.len() {
-            self.check_addrs_len_individual(i as u16)?;
+            if let Err(e) = self.check_addrs_len_individual(i as u16) {
+                errors.push(e);
+            }
         }
-        Ok(())
+        errors
     }
 
     fn check_nlink_individual(&self, inum: u16) -> Result<(), FSError> {
@@ -85,7 +94,7 @@ impl FS {
                 } else {
                     Err(FSError::IncorrectNLink(inum, dinode.nlink))
                 }
-            },
+            }
             FileType::DIR => {
                 let dir = self.get_node(&inum).unwrap();
                 assert_eq!(dir.parents.borrow().len(), 1);
@@ -105,7 +114,7 @@ impl FS {
                 } else {
                     Err(FSError::IncorrectNLink(inum, dinode.nlink))
                 }
-            },
+            }
             // TODO: check nlink for device file
             FileType::DEV => Ok(()),
             FileType::UNUSED => Ok(()),
@@ -114,12 +123,15 @@ impl FS {
 
     // Assuming that reference by ".." is correct
     // and directories must be referenced only by their parent and child directories
-    pub fn check_nlink(&self) -> Result<(), FSError> {
+    pub fn check_nlink(&self) -> Vec<FSError> {
+        let mut errors = vec![];
         for (inum, dinode) in self.dinodes.iter().enumerate() {
             if dinode.typ != FileType::UNUSED {
-                self.check_nlink_individual(inum as u16)?;
+                if let Err(e) = self.check_nlink_individual(inum as u16) {
+                    errors.push(e);
+                }
             }
         }
-        Ok(())
+        errors
     }
 }

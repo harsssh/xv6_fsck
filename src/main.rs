@@ -1,21 +1,16 @@
-use console::{Emoji, style};
-use xv6_fsck::{parser};
+use console::{style, Emoji};
 use xv6_fsck::fs::error::FSError;
+use xv6_fsck::parser;
 
 static DISK: Emoji<'_, '_> = Emoji("💿", "");
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍", "");
 static SPARKLE: Emoji<'_, '_> = Emoji("✨ ", ":-)");
 static ERROR: Emoji<'_, '_> = Emoji("❌ ", ":-(");
 
-fn handle_results(results: &[Result<(), FSError>]) -> bool {
-    let mut has_error = false;
-    for result in results {
-        if let Err(e) = result {
-            has_error = true;
-            eprintln!("{}: {}", style("error").bold().red(), style(e).bold());
-        }
+fn handle_errors(errors: &[FSError]) {
+    for e in errors {
+        eprintln!("{}: {}", style("error").bold().red(), style(e).bold());
     }
-    has_error
 }
 
 fn main() {
@@ -26,7 +21,7 @@ fn main() {
     }
     let path = &args[1];
 
-    let mut results = vec![];
+    let mut errors = vec![];
     let mut has_error = false;
 
     /* Parse */
@@ -44,9 +39,10 @@ fn main() {
         style("[2/5]").bold().dim(),
         LOOKING_GLASS
     );
-    results.push(fs.superblock.check_fields());
-    has_error |= handle_results(&results);
-    results.clear();
+    errors.append(&mut fs.superblock.check_fields());
+    has_error |= !errors.is_empty();
+    handle_errors(&errors);
+    errors.clear();
 
     /* Check block usage */
     println!(
@@ -54,10 +50,11 @@ fn main() {
         style("[3/5]").bold().dim(),
         LOOKING_GLASS
     );
-    results.push(fs.check_datablock_ref());
-    // results.push(fs.check_bitmap());
-    has_error |= handle_results(&results);
-    results.clear();
+    errors.append(&mut fs.check_datablock_ref());
+    // errors.append(&mut fs.check_bitmap());
+    has_error |= !errors.is_empty();
+    handle_errors(&errors);
+    errors.clear();
 
     /* Check directory */
     println!(
@@ -65,10 +62,11 @@ fn main() {
         style("[4/5]").bold().dim(),
         LOOKING_GLASS
     );
-    results.push(fs.check_current_directory());
-    results.push(fs.check_parent_directory());
-    has_error |= handle_results(&results);
-    results.clear();
+    errors.append(&mut fs.check_current_directory());
+    errors.append(&mut fs.check_parent_directory());
+    has_error |= !errors.is_empty();
+    handle_errors(&errors);
+    errors.clear();
 
     /* Check inode */
     println!(
@@ -76,12 +74,13 @@ fn main() {
         style("[5/5]").bold().dim(),
         LOOKING_GLASS
     );
-    results.push(fs.check_device_numbers());
-    results.push(fs.check_nlink());
-    results.push(fs.check_addrs_ref());
-    // results.push(fs.check_addrs_len());
-    has_error |= handle_results(&results);
-    results.clear();
+    errors.append(&mut fs.check_device_numbers());
+    errors.append(&mut fs.check_nlink());
+    errors.append(&mut fs.check_addrs_ref());
+    // errors.append(&mut fs.check_addrs_len());
+    has_error |= !errors.is_empty();
+    handle_errors(&errors);
+    errors.clear();
 
     if has_error {
         println!("{} {}", ERROR, style("Found errors").bold());

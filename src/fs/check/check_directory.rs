@@ -24,13 +24,16 @@ impl FS {
         }
     }
 
-    pub fn check_current_directory(&self) -> Result<(), FSError> {
+    pub fn check_current_directory(&self) -> Vec<FSError> {
+        let mut errors = vec![];
         for (inum, dinode) in self.dinodes.iter().enumerate() {
             if dinode.typ == FileType::DIR {
-                self.check_current_directory_individual(inum as u16)?;
+                if let Err(e) = self.check_current_directory_individual(inum as u16) {
+                    errors.push(e);
+                }
             }
         }
-        Ok(())
+        errors
     }
 
     fn check_parent_directory_individual(&self, inum: u16) -> Result<(), FSError> {
@@ -61,13 +64,16 @@ impl FS {
         }
     }
 
-    pub fn check_parent_directory(&self) -> Result<(), FSError> {
+    pub fn check_parent_directory(&self) -> Vec<FSError> {
+        let mut errors = vec![];
         for (inum, dinode) in self.dinodes.iter().enumerate() {
             if dinode.typ == FileType::DIR {
-                self.check_parent_directory_individual(inum as u16)?;
+                if let Err(e) = self.check_parent_directory_individual(inum as u16) {
+                    errors.push(e);
+                }
             }
         }
-        Ok(())
+        errors
     }
 
     fn check_directory_ref_individual(&self, inum: u16) -> Result<(), FSError> {
