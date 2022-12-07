@@ -94,15 +94,14 @@ fn parse_bit(input: (&[u8], usize)) -> IResult<(&[u8], usize), BlockStatus> {
     let status = match bit {
         0 => BlockStatus::Free,
         1 => BlockStatus::Allocated,
-        // TODO: Error handling
-        _ => panic!("invalid status"),
+        _ => panic!("invalid bit"),
     };
     Ok(((input, offset), status))
 }
 
 // TODO: refactor
 fn parse_bitmap(input: &[u8], blocks: usize) -> IResult<&[u8], Vec<BlockStatus>> {
-    let n = blocks * fs::BSIZE * 8;
+    let n = blocks * fs::BPB;
     let mut parser = multi::count(parse_bit, n);
     let offset = 0;
     let (input, output) = parser((input, offset)).unwrap();
