@@ -54,7 +54,7 @@ fn main() {
         BLOCK
     );
     errors.append(&mut fs.check_datablock_ref());
-    // errors.append(&mut fs.check_bitmap());
+    errors.append(&mut fs.check_bitmap());
     has_error |= !errors.is_empty();
     handle_errors(&errors);
     errors.clear();

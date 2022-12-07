@@ -25,7 +25,6 @@ impl FS {
         errors
     }
 
-    // FIXME: Raise error about valid file system
     // Check bitmap only for data blocks
     // Assume that the each data block references is at most 1
     pub fn check_bitmap(&self) -> Vec<FSError> {

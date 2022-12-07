@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io::Read;
 use std::mem::size_of;
 use nom::{combinator, Parser};
-use nom::bits;
 use nom::bytes;
 use nom::IResult;
 use nom::multi;
@@ -89,14 +88,20 @@ fn parse_dinodes(input: &[u8], blocks: usize, addrs_offset: u32) -> IResult<&[u8
 }
 
 fn parse_bit(input: (&[u8], usize)) -> IResult<(&[u8], usize), BlockStatus> {
-    let mut parser = bits::complete::take(1usize);
-    let ((input, offset), bit) = parser.parse(input)?;
-    let status = match bit {
-        0 => BlockStatus::Free,
-        1 => BlockStatus::Allocated,
-        _ => panic!("invalid bit"),
-    };
-    Ok(((input, offset), status))
+    // HACK: Read from the rightmost bit
+    // Must be checked for correctness
+    let (bytes, offset) = input;
+
+    let first_byte = bytes[0];
+    let bit = (first_byte >> offset) & 1;
+    let status = BlockStatus::new(bit);
+
+    // next input
+    let offset = (offset + 1) % 8;
+    let bytes = if offset == 0 { &bytes[1..] } else { bytes };
+    let input = (bytes, offset);
+
+    Ok((input, status))
 }
 
 // TODO: refactor

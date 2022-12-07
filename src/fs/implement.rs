@@ -4,6 +4,16 @@ use std::collections;
 use crate::parser;
 use crate::util::graph::Node;
 
+impl BlockStatus {
+    pub fn new(bit: u8) -> Self {
+        match bit {
+            0 => BlockStatus::Free,
+            1 => BlockStatus::Allocated,
+            _ => panic!("invalid bit"),
+        }
+    }
+}
+
 impl SuperBlock {
     pub fn new(magic: u32, size: u32, nblocks: u32, ninodes: u32, nlog: u32, logstart: u32, inodestart: u32, bmapstart: u32) -> Self {
         SuperBlock {

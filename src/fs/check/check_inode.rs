@@ -69,7 +69,7 @@ impl FS {
         if len == correct {
             Ok(())
         } else {
-            Err(FSError::InvalidNumberOfDataBlockRef(inum, len))
+            Err(FSError::InvalidNumberOfDataBlockRef(inum, dinode.size, len))
         }
     }
 
