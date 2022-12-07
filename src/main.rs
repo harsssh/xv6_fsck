@@ -4,8 +4,8 @@ use xv6_fsck::parser;
 
 static DISK: Emoji<'_, '_> = Emoji("💿", "");
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍", "");
-static SPARKLE: Emoji<'_, '_> = Emoji("✨ ", ":-)");
-static ERROR: Emoji<'_, '_> = Emoji("❌ ", ":-(");
+static SPARKLE: Emoji<'_, '_> = Emoji("✨", ":-)");
+static ERROR: Emoji<'_, '_> = Emoji("❌", ":-(");
 
 fn handle_errors(errors: &[FSError]) {
     for e in errors {
@@ -83,8 +83,8 @@ fn main() {
     errors.clear();
 
     if has_error {
-        println!("{} {}", ERROR, style("Found errors").bold());
+        println!("{}  {}", ERROR, style("Found errors").bold());
     } else {
-        println!("{} {}", SPARKLE, style("No errors").bold());
+        println!("{}  {}", SPARKLE, style("No errors").bold());
     }
 }
