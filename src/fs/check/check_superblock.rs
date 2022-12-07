@@ -7,7 +7,7 @@ impl SuperBlock {
         if self.size != FSSIZE as u32 {
             return err;
         }
-        if self.nblocks != FSSIZE as u32 {
+        if self.nblocks != NBLOCKS as u32 {
             return err;
         }
         if self.ninodes != NINODES as u32 {
