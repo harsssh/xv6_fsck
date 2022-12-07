@@ -54,7 +54,7 @@ impl FS {
         Ok(())
     }
 
-    // REVIEW: May not be correct validation
+    // FIXME: Raise error about valid file system
     fn check_addrs_len_individual(&self, inum: u16) -> Result<(), FSError> {
         let dinode = &self.dinodes[inum as usize];
         let correct = (dinode.size as f64 / BSIZE as f64).ceil() as usize;
