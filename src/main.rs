@@ -2,8 +2,11 @@ use console::{style, Emoji};
 use xv6_fsck::fs::error::FSError;
 use xv6_fsck::parser;
 
-static DISK: Emoji<'_, '_> = Emoji("💿", "");
 static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍", "");
+static SUPER: Emoji<'_, '_> = Emoji("👑", "");
+static BLOCK: Emoji<'_, '_> = Emoji("🧱", "");
+static DIR: Emoji<'_, '_> = Emoji("📁", "");
+static FILE: Emoji<'_, '_> = Emoji("📄", "");
 static SPARKLE: Emoji<'_, '_> = Emoji("✨", ":-)");
 static ERROR: Emoji<'_, '_> = Emoji("❌", ":-(");
 
@@ -28,7 +31,7 @@ fn main() {
     println!(
         "{} {} Parsing xv6 filesystem image...",
         style("[1/5]").bold().dim(),
-        DISK
+        LOOKING_GLASS
     );
     let img = parser::read_img(path);
     let fs = parser::parse_fs(&img);
@@ -37,7 +40,7 @@ fn main() {
     println!(
         "{} {} Checking superblock...",
         style("[2/5]").bold().dim(),
-        LOOKING_GLASS
+        SUPER
     );
     errors.append(&mut fs.superblock.check_fields());
     has_error |= !errors.is_empty();
@@ -48,7 +51,7 @@ fn main() {
     println!(
         "{} {} Checking block usage...",
         style("[3/5]").bold().dim(),
-        LOOKING_GLASS
+        BLOCK
     );
     errors.append(&mut fs.check_datablock_ref());
     // errors.append(&mut fs.check_bitmap());
@@ -60,7 +63,7 @@ fn main() {
     println!(
         "{} {} Checking directory...",
         style("[4/5]").bold().dim(),
-        LOOKING_GLASS
+        DIR
     );
     errors.append(&mut fs.check_current_directory());
     errors.append(&mut fs.check_parent_directory());
@@ -72,7 +75,7 @@ fn main() {
     println!(
         "{} {} Checking inode...",
         style("[5/5]").bold().dim(),
-        LOOKING_GLASS
+        FILE
     );
     errors.append(&mut fs.check_device_numbers());
     errors.append(&mut fs.check_nlink());
@@ -83,8 +86,8 @@ fn main() {
     errors.clear();
 
     if has_error {
-        println!("{}  {}", ERROR, style("Found errors").bold());
+        println!("{} {}", ERROR, style("Found errors").bold());
     } else {
-        println!("{}  {}", SPARKLE, style("No errors").bold());
+        println!("{} {}", SPARKLE, style("No errors").bold());
     }
 }
