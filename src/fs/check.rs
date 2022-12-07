@@ -9,6 +9,7 @@ use crate::fs::error::FSError;
 pub use crate::fs::check::consts::*;
 
 impl FS {
+    // TODO: Detect all errors for each item
     pub fn check(&self) -> Result<(), FSError> {
         /* Check superblock */
         self.superblock.check_fields()?;
